@@ -4,6 +4,8 @@ import com.yupi.springbootinit.model.entity.Chart;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.Resource;
+
+import com.yupi.springbootinit.model.entity.Post;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,11 +20,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 class PostMapperTest {
 
     @Resource
-    private ChartMapper postMapper;
+    private PostMapper postMapper;
 
     @Test
     void listPostWithDelete() {
-        List<Chart> postList = postMapper.listPostWithDelete(new Date());
+        List<Post> postList = postMapper.listPostWithDelete(new Date());
         Assertions.assertNotNull(postList);
     }
 }

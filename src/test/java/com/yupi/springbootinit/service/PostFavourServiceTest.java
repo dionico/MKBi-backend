@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.springbootinit.model.entity.Chart;
 
 import javax.annotation.Resource;
+
+import com.yupi.springbootinit.model.entity.Post;
+import com.yupi.springbootinit.model.entity.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,7 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class PostFavourServiceTest {
 
     @Resource
-    private PostFavourService chartFavourService;
+    private PostFavourService postFavourService;
 
     private static final User loginUser = new User();
 
@@ -31,14 +34,14 @@ class PostFavourServiceTest {
 
     @Test
     void doPostFavour() {
-        int i = chartFavourService.doPostFavour(1L, loginUser);
+        int i = postFavourService.doPostFavour(1L, loginUser);
         Assertions.assertTrue(i >= 0);
     }
 
     @Test
     void listFavourPostByPage() {
-        QueryWrapper<Chart> chartQueryWrapper = new QueryWrapper<>();
-        chartQueryWrapper.eq("id", 1L);
-        chartFavourService.listFavourPostByPage(Page.of(0, 1), chartQueryWrapper, loginUser.getId());
+        QueryWrapper<Post> postQueryWrapper = new QueryWrapper<>();
+        postQueryWrapper.eq("id", 1L);
+        postFavourService.listFavourPostByPage(Page.of(0, 1), postQueryWrapper, loginUser.getId());
     }
 }

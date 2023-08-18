@@ -1,6 +1,9 @@
 package com.yupi.springbootinit;
 
 import javax.annotation.Resource;
+
+import com.yupi.springbootinit.config.CosClientConfig;
+import com.yupi.springbootinit.manager.AiManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -14,11 +17,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 class MainApplicationTests {
 
     @Resource
-    private WxOpenConfig wxOpenConfig;
+    private CosClientConfig cosClientConfig;
 
     @Test
     void contextLoads() {
-        System.out.println(wxOpenConfig);
+        System.out.println(cosClientConfig);
     }
 
 }

@@ -41,7 +41,7 @@ public class Chart implements Serializable {
     /**
      * 生成的图表数据
      */
-    private String genPost;
+    private String genChart;
 
     /**
      * 生成的分析结论
