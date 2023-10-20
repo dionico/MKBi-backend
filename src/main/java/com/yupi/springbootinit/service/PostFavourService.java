@@ -11,8 +11,8 @@ import com.yupi.springbootinit.model.entity.User;
 /**
  * 帖子收藏服务
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
+ * @author <a href="https://magicalmirai.com">Mikufans</a>
+ * @from <a href="https://www.tw-pjsekai.com/">世界计划，缤纷舞台</a>
  */
 public interface PostFavourService extends IService<PostFavour> {
 
