@@ -1,10 +1,10 @@
 package com.yupi.springbootinit.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 用户
@@ -16,7 +16,7 @@ public class User implements Serializable {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -59,6 +59,21 @@ public class User implements Serializable {
      */
     @TableLogic
     private Integer isDelete;
+
+    /**
+     * 性别：0女1男
+     */
+    private Integer gender;
+
+    /**
+     * 电话
+     */
+    private String phone;
+
+    /**
+     * 出生日期
+     */
+    private Date brith;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

@@ -2,8 +2,7 @@ package com.yupi.springbootinit.esdao;
 
 import com.yupi.springbootinit.model.dto.post.PostEsDTO;
 import com.yupi.springbootinit.model.dto.post.PostQueryRequest;
-import com.yupi.springbootinit.model.entity.Post;
-import com.yupi.springbootinit.service.PostService;
+
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
