@@ -7,15 +7,13 @@ import com.yupi.springbootinit.model.dto.user.UserQueryRequest;
 import com.yupi.springbootinit.model.entity.User;
 import com.yupi.springbootinit.model.vo.LoginUserVO;
 import com.yupi.springbootinit.model.vo.UserVO;
-
-
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
 * @author DIO
 * @description 针对表【user(用户)】的数据库操作Service
-* @createDate 2024-02-05 13:12:32
+* @createDate 2024-02-07 16:34:37
 */
 public interface UserService extends IService<User> {
 
@@ -110,5 +108,4 @@ public interface UserService extends IService<User> {
      * @return
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
-
 }

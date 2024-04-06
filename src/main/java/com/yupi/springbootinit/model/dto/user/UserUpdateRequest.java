@@ -1,6 +1,9 @@
 package com.yupi.springbootinit.model.dto.user;
 
 import java.io.Serializable;
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 /**
@@ -27,9 +30,21 @@ public class UserUpdateRequest implements Serializable {
     private String userAvatar;
 
     /**
-     * 简介
+     * 性别：0女1男
      */
-    private String userProfile;
+    private Integer gender;
+
+    /**
+     * 电话
+     */
+    private String phone;
+
+    /**
+     * 出生日期
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape = JsonFormat.Shape.STRING)
+//    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", shape = JsonFormat.Shape.STRING)
+    private Date birth;
 
     /**
      * 用户角色：user/admin/ban

@@ -16,7 +16,7 @@ create table if not exists user
     userAvatar   varchar(1024)                          null comment '用户头像',
     gender       tinyint      default 0                 not null comment '性别：0女1男',
     phone        varchar(32)                            null comment '电话',
-    brith        datetime                               null comment '出生日期',
+    birth        datetime                               null comment '出生日期',
     userRole     varchar(256) default 'user'            not null comment '用户角色：user/admin',
     createTime   datetime     default CURRENT_TIMESTAMP not null comment '创建时间',
     updateTime   datetime     default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
@@ -42,3 +42,35 @@ create table if not exists chart
     isDelete   tinyint  default 0                 not null comment '是否删除'
 ) comment '图表信息表' collate = utf8mb4_unicode_ci;
 
+-- 用户积分表
+create table if not exists user_points
+(
+    id              bigint auto_increment comment '主键' primary key,
+    userId          bigint                        not null comment '用户ID，关联user表id',
+    totalPoints     int                           not null default 0 comment '总积分数量',
+    currentPoints   int                           not null default 0 comment '当前可用积分（扣除已使用、过期等后的积分）',
+    pointSource     varchar(64)                  not null comment '积分来源：充值、购买、活动奖励等',
+    rechargeOrderId bigint                         null comment '关联的充值订单ID（如充值来源时填写）',
+    createTime      datetime     default CURRENT_TIMESTAMP not null comment '积分获取时间',
+    updateTime      datetime     default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间',
+    isDelete        tinyint      default 0                 not null comment '是否删除'
+) comment '用户积分记录' collate = utf8mb4_unicode_ci;
+
+
+-- 充值订单表
+create table if not exists recharge_orders
+(
+    id              bigint auto_increment comment '主键' primary key,
+    orderId         varchar(64)                  not null comment '订单号',
+    userId          bigint                        not null comment '用户ID，关联user表id',
+    amount          decimal(10, 2)               not null comment '充值金额',
+    pointsReceived  int                           not null comment '获得积分数量',
+    paymentMethod   varchar(64)                  not null comment '支付方式：例如支付宝沙盒',
+    transactionId   varchar(128)                 null comment '支付宝沙盒交易ID',
+    orderStatus     enum('pending', 'paying', 'succeed', 'failed', 'refunded') not null default 'pending' comment '订单状态',
+    createTime      datetime     default CURRENT_TIMESTAMP not null comment '创建时间',
+    payTime         datetime                            null comment '支付成功时间',
+    updateTime      datetime     default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间',
+    refundReason    varchar(256)                 null comment '退款原因（若退款）',
+    isDelete        tinyint      default 0                 not null comment '是否删除'
+) comment '充值订单表' collate = utf8mb4_unicode_ci;

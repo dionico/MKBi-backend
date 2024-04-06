@@ -6,6 +6,7 @@ import com.yupi.springbootinit.constant.BiMqConstant;
 import com.yupi.springbootinit.constant.CommonConstant;
 import com.yupi.springbootinit.exception.BusinessException;
 import com.yupi.springbootinit.manager.AiManager;
+import com.yupi.springbootinit.manager.SparkManager;
 import com.yupi.springbootinit.model.entity.Chart;
 import com.yupi.springbootinit.model.enums.ChartStatusEnum;
 import com.yupi.springbootinit.service.ChartService;
@@ -21,6 +22,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.io.IOException;
 
+import static javax.swing.text.html.HTML.Attribute.PROMPT;
+
 /**
  * 消息消费者
  *
@@ -34,6 +37,8 @@ public class BiMessageConsumer {
 
     @Resource
     private AiManager aiManager;
+    @Resource
+    private SparkManager sparkManager;
 
     //指定程序监听的消息队列和确认机制
     @SneakyThrows
@@ -65,10 +70,27 @@ public class BiMessageConsumer {
             return;
         }
         //调用AI
-        String result = aiManager.doChat(CommonConstant.BI_MODEL_ID, buildUserInput(chart));
+//        String result = aiManager.doChat(CommonConstant.BI_MODEL_ID, buildUserInput(chart));
+        //调用讯飞星火AI
+        String result = sparkManager.sendMesToAIUseXingHuo( PROMPT + buildUserInput(chart));
         String[] splits = result.split("【【【【【");
         if (splits.length < 3) {
             channel.basicNack(deliveryTag, false, false);
+            //chart.setStatus(ChartStatusEnum.FAILED.getValue());
+
+
+            // 更新图表状态为失败
+            Chart updateChartResult = new Chart();
+            updateChartResult.setId(chart.getId());
+            updateChartResult.setStatus(ChartStatusEnum.FAILED.getValue()); // 设置状态为失败
+            boolean updateResult = chartService.updateById(updateChartResult);
+
+            if (!updateResult) {
+                // 如果更新失败，记录错误信息
+                handleChartUpdateError(chart.getId(), "更新 '图表生成失败' 状态失败");
+            }
+
+//            handleChartUpdateError(chart.getId(), "图表生成失败");
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "AI 生成错误");
         }
         String genChart = splits[1].trim();//图表代码

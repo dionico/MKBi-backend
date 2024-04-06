@@ -70,7 +70,7 @@ AIGC是AI大模型，特别是自然语言处理模型的一种重要应用；Ch
 8. MyBatis-Plus 数据库访问结构
 9. IDEA插件 MyBatisX ： 根据数据库表自动生成
 10. RabbitMQ：消息队列
-11. AI SDK：鱼聪明AI接口开发
+11. ~~AI SDK：鱼聪明AI接口开发~~  AI SDK：讯飞星火大模型接口开发
 12. JDK 线程池及异步化
 13. Swagger + Knife4j 项目文档
 14. Easy Excel：表格数据处理、Hutool工具库 、Apache Common Utils、Gson 解析库、Lombok 注解

@@ -15,6 +15,7 @@ import com.yupi.springbootinit.exception.BusinessException;
 import com.yupi.springbootinit.exception.ThrowUtils;
 import com.yupi.springbootinit.manager.AiManager;
 import com.yupi.springbootinit.manager.RedisLimiterManager;
+import com.yupi.springbootinit.manager.SparkManager;
 import com.yupi.springbootinit.model.dto.chart.*;
 import com.yupi.springbootinit.model.entity.Chart;
 import com.yupi.springbootinit.model.entity.User;
@@ -39,11 +40,14 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static com.yupi.springbootinit.constant.CommonConstant.PRECONDITION;
+import static com.yupi.springbootinit.constant.CommonConstant.PROMPT;
+
 /**
  * 图表接口
  *
- * @author
- * @from
+ * @author <a href="https://magicalmirai.com">Mikufans</a>
+ * @from <a href="https://www.tw-pjsekai.com/">世界计划，缤纷舞台</a>
  */
 @RestController
 @RequestMapping("/chart")
@@ -66,6 +70,9 @@ public class ChartController {
 
     @Resource
     private BiMessageProducer biMessageProducer;
+
+    @Resource
+    private SparkManager sparkManager;
 
 
     /**
@@ -289,7 +296,10 @@ public class ChartController {
         String csvData = ExcelUtils.excelToCsv(multipartFile);
         userInput.append(csvData).append("\n");
 
-        String result = aiManager.doChat(biModelId,userInput.toString());
+        //调用鱼聪明AI
+//        String result = aiManager.doChat(biModelId,userInput.toString());
+        //调用讯飞星火AI
+        String result = sparkManager.sendMesToAIUseXingHuo( PROMPT + userInput.toString());
         String[] splits = result.split("【【【【【");
         if (splits.length < 3){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"AI 生成错误");
@@ -409,7 +419,9 @@ public class ChartController {
                 return;
             }
             //调用AI
-            String result = aiManager.doChat(biModelId, userInput.toString());
+//            String result = aiManager.doChat(biModelId, userInput.toString());
+            //调用讯飞星火AI
+            String result = sparkManager.sendMesToAIUseXingHuo( PROMPT + userInput.toString());
             String[] splits = result.split("【【【【【");
             if (splits.length < 3) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "AI 生成错误");
