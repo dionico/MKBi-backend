@@ -19,7 +19,7 @@ public interface UserPointsService extends IService<UserPoints> {
     /**
      * 获取可用积分数
      */
-    Integer getCurrentPoints(Long userId);
+    //Integer getCurrentPoints(Long userId);
 
     /**
      * 每日签到

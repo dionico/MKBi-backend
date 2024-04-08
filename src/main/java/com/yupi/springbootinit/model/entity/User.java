@@ -76,6 +76,11 @@ public class User implements Serializable {
      */
     private Date birth;
 
+    /**
+     * 用户积分
+     */
+//    private Integer totalPoints;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

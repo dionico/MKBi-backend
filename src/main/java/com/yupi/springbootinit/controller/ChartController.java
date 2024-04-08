@@ -59,6 +59,7 @@ public class ChartController {
 
     @Resource
     private UserService userService;
+
     @Resource
     private AiManager aiManager;
 

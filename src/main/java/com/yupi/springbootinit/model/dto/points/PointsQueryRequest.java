@@ -25,15 +25,6 @@ public class PointsQueryRequest extends PageRequest implements Serializable {
      */
     private Long userId;
 
-    /**
-     * 总积分
-     */
-    private Integer totalPoints;
-
-    /**
-     * 当前可用积分（扣除已使用、过期等后的积分）
-     */
-    private Integer currentPoints;
 
     /**
      * 积分来源：充值、购买、活动奖励等

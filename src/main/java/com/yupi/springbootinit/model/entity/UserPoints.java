@@ -29,9 +29,9 @@ public class UserPoints implements Serializable {
      */
     private Integer totalPoints;
 
-    /**
-     * 当前可用积分（扣除已使用、过期等后的积分）
-     */
+//    /**
+//     * 当前可用积分（扣除已使用、过期等后的积分）
+//     */
     private Integer currentPoints;
 
     /**
@@ -48,6 +48,11 @@ public class UserPoints implements Serializable {
      * 积分获取时间
      */
     private Date createTime;
+
+    /**
+     * 签到时间
+     */
+    private Date lastSignInDate;
 
     /**
      * 更新时间

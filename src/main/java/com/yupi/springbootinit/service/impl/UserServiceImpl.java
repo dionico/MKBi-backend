@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupi.springbootinit.common.ErrorCode;
 import com.yupi.springbootinit.constant.CommonConstant;
+import com.yupi.springbootinit.constant.PointsConstant;
 import com.yupi.springbootinit.exception.BusinessException;
 import com.yupi.springbootinit.mapper.UserMapper;
 import com.yupi.springbootinit.model.dto.user.UserQueryRequest;
 import com.yupi.springbootinit.model.entity.User;
+import com.yupi.springbootinit.model.entity.UserPoints;
 import com.yupi.springbootinit.model.enums.UserRoleEnum;
 import com.yupi.springbootinit.model.vo.LoginUserVO;
 import com.yupi.springbootinit.model.vo.UserVO;
@@ -20,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
@@ -37,6 +40,9 @@ import static com.yupi.springbootinit.constant.UserConstant.USER_LOGIN_STATE;
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     implements UserService {
+
+    @Resource
+    private UserPointsServiceImpl userPointsService;
 
 
     /**
@@ -78,6 +84,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             if (!saveResult) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
             }
+            // 4. 注册成功后，为用户创建初始积分记录
+            UserPoints initialUserPoints = new UserPoints();
+            initialUserPoints.setUserId(user.getId()); // user 是刚注册成功的用户对象
+            initialUserPoints.setTotalPoints(PointsConstant.INITIAL_POINTS); // 初始化积分
+            initialUserPoints.setPointSource(PointsConstant.REGISTER);//积分来源
+//            initialUserPoints.setCurrentPoints(PointsConstant.INITIAL_POINTS); // 可以设置当前积分等于初始积分，假设首次注册全部到账
+            boolean result = userPointsService.save(initialUserPoints);
+            if (!result) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，积分初始化错误");
+            }
             return user.getId();
         }
     }
@@ -106,9 +122,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             log.info("user login failed, userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         }
+
+        // 创建LoginUserVO对象并设置非敏感属性和积分信息
+        LoginUserVO loginUserVO = new LoginUserVO();
+        loginUserVO.setId(user.getId());
+        loginUserVO.setUserAvatar(user.getUserAvatar());
+        loginUserVO.setUserName(user.getUserName());
+        loginUserVO.setUserRole(user.getUserRole());
+        loginUserVO.setBirth(user.getBirth());
+        loginUserVO.setGender(user.getGender());
+        loginUserVO.setPhone(user.getPhone());
+        loginUserVO.setCreateTime(user.getCreateTime());
+        loginUserVO.setUpdateTime(user.getUpdateTime());
+
+        // 查询用户的积分信息
+        QueryWrapper<UserPoints> pointsQueryWrapper = new QueryWrapper<>();
+        pointsQueryWrapper.eq("userId", user.getId());
+        UserPoints userPoints = userPointsService.getOne(pointsQueryWrapper);
+
+        // 如果存在积分记录，将积分信息设置到用户对象中
+        if (userPoints != null) {
+            loginUserVO.setTotalPoints(userPoints.getTotalPoints()); // 假设totalPoints是用户的总积分
+        } else {
+            loginUserVO.setTotalPoints(0); // 如果没有积分记录，设置为0
+        }
         // 3. 记录用户的登录态
-        request.getSession().setAttribute(USER_LOGIN_STATE, user);
-        return this.getLoginUserVO(user);
+        request.getSession().setAttribute(USER_LOGIN_STATE, loginUserVO);
+        return loginUserVO;
     }
 
 

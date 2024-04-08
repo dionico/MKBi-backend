@@ -52,6 +52,7 @@ create table if not exists user_points
     pointSource     varchar(64)                  not null comment '积分来源：充值、购买、活动奖励等',
     rechargeOrderId bigint                         null comment '关联的充值订单ID（如充值来源时填写）',
     createTime      datetime     default CURRENT_TIMESTAMP not null comment '积分获取时间',
+    lastSignInDate  datetime                       null comment '签到时间',
     updateTime      datetime     default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '更新时间',
     isDelete        tinyint      default 0                 not null comment '是否删除'
 ) comment '用户积分记录' collate = utf8mb4_unicode_ci;
