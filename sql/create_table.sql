@@ -61,13 +61,13 @@ create table if not exists user_points
 -- 充值订单表
 create table if not exists recharge_orders
 (
-    id              bigint auto_increment comment '主键' primary key,
-    orderId         varchar(64)                  not null comment '订单号',
+    id              bigint auto_increment comment 'id' primary key comment '订单id',
     userId          bigint                        not null comment '用户ID，关联user表id',
+    subject       varchar(128)                       not null comment '交易名称',
     amount          decimal(10, 2)               not null comment '充值金额',
-    pointsReceived  int                           not null comment '获得积分数量',
+    buyerId       varchar(64)                        null comment '支付宝买家id',
     paymentMethod   varchar(64)                  not null comment '支付方式：例如支付宝沙盒',
-    transactionId   varchar(128)                 null comment '支付宝沙盒交易ID',
+    transactionId   varchar(128)                 null comment '支付宝交易凭证ID',
     orderStatus     enum('pending', 'paying', 'succeed', 'failed', 'refunded') not null default 'pending' comment '订单状态',
     createTime      datetime     default CURRENT_TIMESTAMP not null comment '创建时间',
     payTime         datetime                            null comment '支付成功时间',

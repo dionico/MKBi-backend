@@ -25,6 +25,10 @@ public class PointsQueryRequest extends PageRequest implements Serializable {
      */
     private Long userId;
 
+    /**
+     * 总积分数量
+     */
+    private Integer totalPoints;
 
     /**
      * 积分来源：充值、购买、活动奖励等

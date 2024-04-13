@@ -11,6 +11,7 @@ import com.yupi.springbootinit.mapper.UserMapper;
 import com.yupi.springbootinit.model.dto.user.UserQueryRequest;
 import com.yupi.springbootinit.model.entity.User;
 import com.yupi.springbootinit.model.entity.UserPoints;
+import com.yupi.springbootinit.model.entity.UserWithPoints;
 import com.yupi.springbootinit.model.enums.UserRoleEnum;
 import com.yupi.springbootinit.model.vo.LoginUserVO;
 import com.yupi.springbootinit.model.vo.UserVO;
@@ -124,31 +125,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         // 创建LoginUserVO对象并设置非敏感属性和积分信息
-        LoginUserVO loginUserVO = new LoginUserVO();
-        loginUserVO.setId(user.getId());
-        loginUserVO.setUserAvatar(user.getUserAvatar());
-        loginUserVO.setUserName(user.getUserName());
-        loginUserVO.setUserRole(user.getUserRole());
-        loginUserVO.setBirth(user.getBirth());
-        loginUserVO.setGender(user.getGender());
-        loginUserVO.setPhone(user.getPhone());
-        loginUserVO.setCreateTime(user.getCreateTime());
-        loginUserVO.setUpdateTime(user.getUpdateTime());
+//        LoginUserVO loginUserVO = new LoginUserVO();
+//        loginUserVO.setId(user.getId());
+//        loginUserVO.setUserAvatar(user.getUserAvatar());
+//        loginUserVO.setUserName(user.getUserName());
+//        loginUserVO.setUserRole(user.getUserRole());
+//        loginUserVO.setBirth(user.getBirth());
+//        loginUserVO.setGender(user.getGender());
+//        loginUserVO.setPhone(user.getPhone());
+//        loginUserVO.setCreateTime(user.getCreateTime());
+//        loginUserVO.setUpdateTime(user.getUpdateTime());
 
-        // 查询用户的积分信息
-        QueryWrapper<UserPoints> pointsQueryWrapper = new QueryWrapper<>();
-        pointsQueryWrapper.eq("userId", user.getId());
-        UserPoints userPoints = userPointsService.getOne(pointsQueryWrapper);
-
-        // 如果存在积分记录，将积分信息设置到用户对象中
-        if (userPoints != null) {
-            loginUserVO.setTotalPoints(userPoints.getTotalPoints()); // 假设totalPoints是用户的总积分
-        } else {
-            loginUserVO.setTotalPoints(0); // 如果没有积分记录，设置为0
-        }
+//        // 查询用户的积分信息
+//        QueryWrapper<UserPoints> pointsQueryWrapper = new QueryWrapper<>();
+//        pointsQueryWrapper.eq("userId", user.getId());
+//        UserPoints userPoints = userPointsService.getOne(pointsQueryWrapper);
+//
+//        // 如果存在积分记录，将积分信息设置到用户对象中
+//        if (userPoints != null) {
+//            loginUserVO.setTotalPoints(userPoints.getTotalPoints()); // 假设totalPoints是用户的总积分
+//        } else {
+//            loginUserVO.setTotalPoints(0); // 如果没有积分记录，设置为0
+//        }
         // 3. 记录用户的登录态
-        request.getSession().setAttribute(USER_LOGIN_STATE, loginUserVO);
-        return loginUserVO;
+        request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        return this.getLoginUserVO(user);
     }
 
 

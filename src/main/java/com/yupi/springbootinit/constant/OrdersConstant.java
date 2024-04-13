@@ -9,7 +9,7 @@ public interface OrdersConstant {
     /**
      * 回调地址(本地部署时需要内网穿透)
      */
-    String NOTIFYURL = "http://6ytvug.natappfree.cc/api/alipay/notify";
+//    String NOTIFYURL = "http://6ytvug.natappfree.cc/api/alipay/notify";
 
     /**
      * 未支付

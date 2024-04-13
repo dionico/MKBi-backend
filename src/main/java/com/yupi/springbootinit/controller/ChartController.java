@@ -10,6 +10,7 @@ import com.yupi.springbootinit.common.DeleteRequest;
 import com.yupi.springbootinit.common.ErrorCode;
 import com.yupi.springbootinit.common.ResultUtils;
 import com.yupi.springbootinit.constant.CommonConstant;
+import com.yupi.springbootinit.constant.PointsConstant;
 import com.yupi.springbootinit.constant.UserConstant;
 import com.yupi.springbootinit.exception.BusinessException;
 import com.yupi.springbootinit.exception.ThrowUtils;
@@ -23,6 +24,7 @@ import com.yupi.springbootinit.model.enums.ChartStatusEnum;
 import com.yupi.springbootinit.model.vo.BiResponse;
 import com.yupi.springbootinit.mq.BiMessageProducer;
 import com.yupi.springbootinit.service.ChartService;
+import com.yupi.springbootinit.service.UserPointsService;
 import com.yupi.springbootinit.service.UserService;
 import com.yupi.springbootinit.utils.ExcelUtils;
 import com.yupi.springbootinit.utils.SqlUtils;
@@ -74,6 +76,9 @@ public class ChartController {
 
     @Resource
     private SparkManager sparkManager;
+
+    @Resource
+    private UserPointsService userPointsService;
 
 
     /**
@@ -299,6 +304,8 @@ public class ChartController {
 
         //调用鱼聪明AI
 //        String result = aiManager.doChat(biModelId,userInput.toString());
+        //判断积分是否足够
+        ThrowUtils.throwIf(userPointsService.updatePoints(loginUser.getId(), PointsConstant.CREDIT_CHART_SUCCESS), ErrorCode.OPERATION_ERROR, "积分不足");
         //调用讯飞星火AI
         String result = sparkManager.sendMesToAIUseXingHuo( PROMPT + userInput.toString());
         String[] splits = result.split("【【【【【");
@@ -421,6 +428,8 @@ public class ChartController {
             }
             //调用AI
 //            String result = aiManager.doChat(biModelId, userInput.toString());
+            //判断积分是否足够
+            ThrowUtils.throwIf(userPointsService.updatePoints(loginUser.getId(), PointsConstant.CREDIT_CHART_SUCCESS), ErrorCode.OPERATION_ERROR, "积分不足");
             //调用讯飞星火AI
             String result = sparkManager.sendMesToAIUseXingHuo( PROMPT + userInput.toString());
             String[] splits = result.split("【【【【【");
@@ -513,6 +522,8 @@ public class ChartController {
         ThrowUtils.throwIf(!saveResult, ErrorCode.SYSTEM_ERROR, "图表保存失败");
 
         long newChartId= chart.getId();
+        //判断积分是否足够
+        ThrowUtils.throwIf(userPointsService.updatePoints(loginUser.getId(), PointsConstant.CREDIT_CHART_SUCCESS), ErrorCode.OPERATION_ERROR, "积分不足");
         //生产者发送图表Id给消费者，具体的事务处理在消费者中进行
         biMessageProducer.sendMessage(String.valueOf(newChartId));
         BiResponse biResponse = new BiResponse();

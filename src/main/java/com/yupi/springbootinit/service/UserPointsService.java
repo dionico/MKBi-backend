@@ -34,6 +34,7 @@ public interface UserPointsService extends IService<UserPoints> {
      * @param points
      * @return
      */
-    Boolean updatePoints(Long userId,long points);
+    Boolean updatePoints(Long userId,Integer points);
+    Boolean updatePoints(Long userId,Integer points,String source);
 
 }

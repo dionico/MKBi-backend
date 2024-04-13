@@ -237,7 +237,7 @@ public class PointsController {
             return queryWrapper;
         }
 
-//        Integer totalPoints = PointsQueryRequest.getTotalPoints();
+        Integer totalPoints = PointsQueryRequest.getTotalPoints();
 //        Integer currentPoints = PointsQueryRequest.getCurrentPoints();
         String pointSource = PointsQueryRequest.getPointSource();
         Long rechargeOrderId = PointsQueryRequest.getRechargeOrderId();
@@ -250,7 +250,7 @@ public class PointsController {
 
 
         queryWrapper.eq(id!=null &&id>0,"id",id);
-//        queryWrapper.eq(ObjectUtils.isNotEmpty(totalPoints),"totalPoints",totalPoints);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(totalPoints),"totalPoints",totalPoints);
 //        queryWrapper.eq(ObjectUtils.isNotEmpty(currentPoints),"currentPoints",currentPoints);
         queryWrapper.eq(ObjectUtils.isNotEmpty(pointSource),"pointSource",pointSource);
         queryWrapper.eq(ObjectUtils.isNotEmpty(rechargeOrderId),"rechargeOrderId",rechargeOrderId);

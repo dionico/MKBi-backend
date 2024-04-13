@@ -1,11 +1,11 @@
 package com.yupi.springbootinit.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 充值订单表
@@ -15,15 +15,10 @@ import lombok.Data;
 @Data
 public class RechargeOrders implements Serializable {
     /**
-     * 主键
+     * 订单id
      */
     @TableId(type = IdType.AUTO)
     private Long id;
-
-    /**
-     * 订单号
-     */
-    private String orderId;
 
     /**
      * 用户ID，关联user表id
@@ -31,14 +26,19 @@ public class RechargeOrders implements Serializable {
     private Long userId;
 
     /**
+     * 交易名称
+     */
+    private String subject;
+
+    /**
+     * 支付宝买家id
+     */
+    private String buyerId;
+
+    /**
      * 充值金额
      */
     private BigDecimal amount;
-
-    /**
-     * 获得积分数量
-     */
-    private Integer pointsReceived;
 
     /**
      * 支付方式：例如支付宝沙盒
@@ -80,6 +80,8 @@ public class RechargeOrders implements Serializable {
      */
     @TableLogic
     private Integer isDelete;
+
+
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

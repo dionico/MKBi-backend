@@ -116,7 +116,7 @@ public class UserPointsServiceImpl extends ServiceImpl<UserPointsMapper, UserPoi
      * @return
      */
     @Override
-    public Boolean updatePoints(Long userId, long points) {
+    public Boolean updatePoints(Long userId, Integer points) {
         if (userId == null){
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
@@ -129,6 +129,33 @@ public class UserPointsServiceImpl extends ServiceImpl<UserPointsMapper, UserPoi
         if (userTotalPoints+points<0) return false;
         userTotalPoints = Math.toIntExact(userTotalPoints + points);
         userPoints.setTotalPoints(userTotalPoints);
+        //保持更新时间
+        userPoints.setUpdateTime(null);
+        return this.updateById(userPoints);
+    }
+
+    /**
+     * 更新积分（主要是增加加积分时调用）
+     * @param userId
+     * @param points
+     * @param source
+     * @return
+     */
+    @Override
+    public Boolean updatePoints(Long userId, Integer points, String source) {
+        if (userId == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        QueryWrapper<UserPoints> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId",userId);
+        UserPoints userPoints = this.getOne(queryWrapper);
+        ThrowUtils.throwIf(userPoints == null, ErrorCode.NOT_FOUND_ERROR);
+        Integer userTotalPoints = userPoints.getTotalPoints();
+        //积分不足时
+        if (userTotalPoints+points<0) return false;
+        userTotalPoints = Math.toIntExact(userTotalPoints + points);
+        userPoints.setTotalPoints(userTotalPoints);
+        userPoints.setPointSource(source);
         //保持更新时间
         userPoints.setUpdateTime(null);
         return this.updateById(userPoints);
