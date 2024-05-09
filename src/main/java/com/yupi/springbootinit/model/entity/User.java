@@ -79,7 +79,7 @@ public class User implements Serializable {
     /**
      * 用户积分
      */
-//    private Integer totalPoints;
+    private Integer totalPoints;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

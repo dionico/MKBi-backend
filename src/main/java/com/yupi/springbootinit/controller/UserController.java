@@ -18,6 +18,7 @@ import com.yupi.springbootinit.model.dto.user.UserUpdateRequest;
 import com.yupi.springbootinit.model.entity.User;
 import com.yupi.springbootinit.model.vo.LoginUserVO;
 import com.yupi.springbootinit.model.vo.UserVO;
+import com.yupi.springbootinit.service.UserPointsService;
 import com.yupi.springbootinit.service.UserService;
 import java.util.List;
 import javax.annotation.Resource;
@@ -45,6 +46,9 @@ public class UserController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private UserPointsService pointsService;
 
 
     // region 登录相关
@@ -177,7 +181,10 @@ public class UserController {
         User user = new User();
         BeanUtils.copyProperties(userUpdateRequest, user);
         boolean result = userService.updateById(user);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR,"用户积分更新失败");
+
+        boolean pointResult = pointsService.updatePoints(user.getId(), user.getTotalPoints(), "管理员操作");
+        ThrowUtils.throwIf(!pointResult, ErrorCode.OPERATION_ERROR,"积分表更新失败");
         return ResultUtils.success(true);
     }
 

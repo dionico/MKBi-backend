@@ -1,4 +1,4 @@
-package com.yupi.springbootinit.mq;
+package com.yupi.springbootinit.mq.BI;
 
 import com.rabbitmq.client.Channel;
 import com.yupi.springbootinit.common.ErrorCode;
@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.io.IOException;
 
+import static com.yupi.springbootinit.constant.CommonConstant.PROMPT2;
 import static javax.swing.text.html.HTML.Attribute.PROMPT;
 
 /**
@@ -72,12 +73,12 @@ public class BiMessageConsumer {
         //调用AI
 //        String result = aiManager.doChat(CommonConstant.BI_MODEL_ID, buildUserInput(chart));
         //调用讯飞星火AI
-        String result = sparkManager.sendMesToAIUseXingHuo( PROMPT + buildUserInput(chart));
-        String[] splits = result.split("【【【【【");
+        String result = sparkManager.sendMesToAIUseXingHuo( PROMPT2 + buildUserInput(chart));
+//        String[] splits = result.split("【【【【【");
+        String[] splits = result.split("@@@@@");
         if (splits.length < 3) {
             channel.basicNack(deliveryTag, false, false);
             //chart.setStatus(ChartStatusEnum.FAILED.getValue());
-
 
             // 更新图表状态为失败
             Chart updateChartResult = new Chart();

@@ -43,6 +43,10 @@ public class UserVO implements Serializable {
      */
     private Date birth;
 
+    /**
+     * 总积分数量
+     */
+    private Integer totalPoints;
 
     /**
      * 用户角色：user/admin/ban

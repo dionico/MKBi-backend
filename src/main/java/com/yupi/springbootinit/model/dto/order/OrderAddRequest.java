@@ -21,7 +21,7 @@ public class OrderAddRequest implements Serializable {
     /**
      * 交易金额
      */
-    private BigDecimal totalAmount;
+    private BigDecimal amount;
 
     /**
      * 支付方式：例如支付宝沙盒

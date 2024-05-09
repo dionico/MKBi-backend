@@ -9,13 +9,16 @@ import com.yupi.springbootinit.constant.PointsConstant;
 import com.yupi.springbootinit.exception.BusinessException;
 import com.yupi.springbootinit.exception.ThrowUtils;
 import com.yupi.springbootinit.manager.RedisLimiterManager;
+import com.yupi.springbootinit.model.entity.User;
 import com.yupi.springbootinit.model.entity.UserPoints;
 import com.yupi.springbootinit.service.UserPointsService;
 import com.yupi.springbootinit.mapper.UserPointsMapper;
+import com.yupi.springbootinit.service.UserService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
@@ -27,6 +30,9 @@ import java.util.Date;
 @Service
 public class UserPointsServiceImpl extends ServiceImpl<UserPointsMapper, UserPoints>
     implements UserPointsService{
+
+//    @Resource
+//    private UserService userService;
 
 
     /**
@@ -105,6 +111,7 @@ public class UserPointsServiceImpl extends ServiceImpl<UserPointsMapper, UserPoi
             userPoints.setTotalPoints(userTotalPoints);
             userPoints.setLastSignInDate(new Date());
 
+
             return this.updateById(userPoints);
         }
     }
@@ -124,13 +131,13 @@ public class UserPointsServiceImpl extends ServiceImpl<UserPointsMapper, UserPoi
         queryWrapper.eq("userId",userId);
         UserPoints userPoints = this.getOne(queryWrapper);
         ThrowUtils.throwIf(userPoints == null, ErrorCode.NOT_FOUND_ERROR);
-        Integer userTotalPoints = userPoints.getTotalPoints();
+        Integer userTotalPoints = userPoints.getTotalPoints();//获取用户积分
         //积分不足时
         if (userTotalPoints+points<0) return false;
         userTotalPoints = Math.toIntExact(userTotalPoints + points);
         userPoints.setTotalPoints(userTotalPoints);
         //保持更新时间
-        userPoints.setUpdateTime(null);
+        userPoints.setUpdateTime(new Date());
         return this.updateById(userPoints);
     }
 
@@ -157,7 +164,7 @@ public class UserPointsServiceImpl extends ServiceImpl<UserPointsMapper, UserPoi
         userPoints.setTotalPoints(userTotalPoints);
         userPoints.setPointSource(source);
         //保持更新时间
-        userPoints.setUpdateTime(null);
+        userPoints.setUpdateTime(new Date());
         return this.updateById(userPoints);
     }
 

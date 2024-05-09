@@ -40,9 +40,14 @@ public class UserUpdateRequest implements Serializable {
     private String phone;
 
     /**
+     * 总积分数量
+     */
+    private Integer totalPoints;
+
+    /**
      * 出生日期
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape = JsonFormat.Shape.STRING)
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape = JsonFormat.Shape.STRING)
 //    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", shape = JsonFormat.Shape.STRING)
     private Date birth;
 

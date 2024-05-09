@@ -7,6 +7,7 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.yupi.springbootinit.common.ErrorCode;
 import com.yupi.springbootinit.config.AliPayConfig;
+import com.yupi.springbootinit.constant.AliPayMqConstant;
 import com.yupi.springbootinit.constant.OrdersConstant;
 import com.yupi.springbootinit.constant.PointsConstant;
 import com.yupi.springbootinit.exception.ThrowUtils;
@@ -15,6 +16,7 @@ import com.yupi.springbootinit.model.entity.RechargeOrders;
 
 import com.yupi.springbootinit.model.entity.User;
 
+import com.yupi.springbootinit.mq.AliPay.AliPayMessageProducer;
 import com.yupi.springbootinit.service.RechargeOrdersService;
 import com.yupi.springbootinit.service.UserPointsService;
 import com.yupi.springbootinit.service.UserService;
@@ -60,8 +62,8 @@ public class AliPayController {
     @Resource
     private UserService userService;
 
-//    @Resource
-//    private MqMessageProducer mqMessageProducer;
+    @Resource
+    private AliPayMessageProducer aliPayMessageProducer;
 
 
     @GetMapping("/pay") // &subject=xxx&traceNo=xxx&totalAmount=xxx
@@ -71,7 +73,7 @@ public class AliPayController {
 
         RechargeOrders orders = new RechargeOrders();
         orders.setSubject(aliPay.getSubject());//交易名称
-        orders.setAmount(aliPay.getTotalAmount());//交易金额
+        orders.setAmount(aliPay.getAmount());//交易金额
         orders.setPaymentMethod("支付宝支付");
         orders.setUserId(loginUser.getId());//用户id
         boolean result = ordersService.save(orders);
@@ -87,7 +89,7 @@ public class AliPayController {
         bizContent.set("subject", orders.getSubject());   // 支付的名称
         bizContent.set("product_code", "FAST_INSTANT_TRADE_PAY");  // 固定配置
         request.setBizContent(bizContent.toString());
-//        request.setReturnUrl("想返回的前端路径");
+//        request.setReturnUrl("http://localhost:8000/account/center");
 
         // 执行请求，拿到响应的结果，返回给浏览器
         String form = "";
@@ -96,7 +98,7 @@ public class AliPayController {
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
-//        mqMessageProducer.sendMessage(MqConstant.ORDERS_EXCHANGE_NAME,MqConstant.ORDERS_ROUTING_KEY,String.valueOf(orders.getId()));
+//        aliPayMessageProducer.sendMessage(String.valueOf(orders.getId()));
         httpResponse.setContentType("text/html;charset=" + CHARSET);
         httpResponse.getWriter().write(form);// 直接将完整的表单html输出到页面
         httpResponse.getWriter().flush();

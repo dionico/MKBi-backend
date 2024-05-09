@@ -3,7 +3,6 @@ package com.yupi.springbootinit.controller;
 import cn.hutool.core.io.FileUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.google.gson.Gson;
 import com.yupi.springbootinit.annotation.AuthCheck;
 import com.yupi.springbootinit.common.BaseResponse;
 import com.yupi.springbootinit.common.DeleteRequest;
@@ -22,7 +21,7 @@ import com.yupi.springbootinit.model.entity.Chart;
 import com.yupi.springbootinit.model.entity.User;
 import com.yupi.springbootinit.model.enums.ChartStatusEnum;
 import com.yupi.springbootinit.model.vo.BiResponse;
-import com.yupi.springbootinit.mq.BiMessageProducer;
+import com.yupi.springbootinit.mq.BI.BiMessageProducer;
 import com.yupi.springbootinit.service.ChartService;
 import com.yupi.springbootinit.service.UserPointsService;
 import com.yupi.springbootinit.service.UserService;
@@ -42,8 +41,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static com.yupi.springbootinit.constant.CommonConstant.PRECONDITION;
-import static com.yupi.springbootinit.constant.CommonConstant.PROMPT;
+import static com.yupi.springbootinit.constant.CommonConstant.*;
 
 /**
  * 图表接口
@@ -273,20 +271,15 @@ public class ChartController {
 
         //当前用户信息
         User loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
         //限流判断，每个用户一个限流器
-        redisLimiterManager.doRateLimit("genChartByAi_" + loginUser.getId());
+        redisLimiterManager.doRateLimit("genChartByAi_" + userId);
 
         //模型id
         long biModelId = CommonConstant.BI_MODEL_ID;
         //构造用户输入
         StringBuilder userInput = new StringBuilder();
-        // 分析需求：
-        // 分析网站用户的增长情况
-        // 原始数据：
-        // 日期,用户数
-        // 1号,10
-        // 2号,20
-        // 3号,30
+
         //系统预设，提前告诉AI他的职责、功能、回复格式要求
         userInput.append("分析需求：").append("\n");
 
@@ -305,10 +298,14 @@ public class ChartController {
         //调用鱼聪明AI
 //        String result = aiManager.doChat(biModelId,userInput.toString());
         //判断积分是否足够
-        ThrowUtils.throwIf(userPointsService.updatePoints(loginUser.getId(), PointsConstant.CREDIT_CHART_SUCCESS), ErrorCode.OPERATION_ERROR, "积分不足");
+        ThrowUtils.throwIf(!userPointsService.updatePoints(userId, PointsConstant.CREDIT_CHART_SUCCESS), ErrorCode.OPERATION_ERROR, "积分不足");
+//        userPointsService.updatePoints(userId, PointsConstant.CREDIT_CHART_SUCCESS);//更新积分表用户积分
+        Integer userPoints = userPointsService.getTotalPoints(userId);//获取更新后的用户积分
+        userService.updateUserPoints(userId, userPoints);//更新用户表的用户积分
         //调用讯飞星火AI
-        String result = sparkManager.sendMesToAIUseXingHuo( PROMPT + userInput.toString());
-        String[] splits = result.split("【【【【【");
+        String result = sparkManager.sendMesToAIUseXingHuo( PROMPT2 + userInput.toString());
+//        String[] splits = result.split("【【【【【");
+        String[] splits = result.split("@@@@@");
         if (splits.length < 3){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"AI 生成错误");
         }
@@ -376,8 +373,9 @@ public class ChartController {
 
         //当前用户信息
         User loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
         //限流判断，每个用户一个限流器
-        redisLimiterManager.doRateLimit("genChartByAi_" + loginUser.getId());
+        redisLimiterManager.doRateLimit("genChartByAi_" + userId);
 
         //模型id
         long biModelId = CommonConstant.BI_MODEL_ID;
@@ -429,10 +427,13 @@ public class ChartController {
             //调用AI
 //            String result = aiManager.doChat(biModelId, userInput.toString());
             //判断积分是否足够
-            ThrowUtils.throwIf(userPointsService.updatePoints(loginUser.getId(), PointsConstant.CREDIT_CHART_SUCCESS), ErrorCode.OPERATION_ERROR, "积分不足");
+            ThrowUtils.throwIf(!userPointsService.updatePoints(userId, PointsConstant.CREDIT_CHART_SUCCESS), ErrorCode.OPERATION_ERROR, "积分不足");
+            Integer userPoints = userPointsService.getTotalPoints(userId);//获取更新后的用户积分
+            userService.updateUserPoints(userId, userPoints);//更新用户表的用户积分
             //调用讯飞星火AI
-            String result = sparkManager.sendMesToAIUseXingHuo( PROMPT + userInput.toString());
-            String[] splits = result.split("【【【【【");
+            String result = sparkManager.sendMesToAIUseXingHuo( PROMPT2 + userInput.toString());
+//            String[] splits = result.split("【【【【【");
+            String[] splits = result.split("@@@@@");
             if (splits.length < 3) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "AI 生成错误");
             }
@@ -485,8 +486,9 @@ public class ChartController {
         ThrowUtils.throwIf(!validFileSuffixList.contains(suffix), ErrorCode.PARAMS_ERROR, "文件后缀非法");
         //当前用户信息
         User loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
         //限流判断，每个用户一个限流器
-        redisLimiterManager.doRateLimit("genChartByAi_" + loginUser.getId());
+        redisLimiterManager.doRateLimit("genChartByAi_" + userId);
         //模型id
         long biModelId = CommonConstant.BI_MODEL_ID;
         //构造用户输入
@@ -523,7 +525,9 @@ public class ChartController {
 
         long newChartId= chart.getId();
         //判断积分是否足够
-        ThrowUtils.throwIf(userPointsService.updatePoints(loginUser.getId(), PointsConstant.CREDIT_CHART_SUCCESS), ErrorCode.OPERATION_ERROR, "积分不足");
+        ThrowUtils.throwIf(!userPointsService.updatePoints(userId, PointsConstant.CREDIT_CHART_SUCCESS), ErrorCode.OPERATION_ERROR, "积分不足");
+        Integer userPoints = userPointsService.getTotalPoints(userId);//获取更新后的用户积分
+        userService.updateUserPoints(userId, userPoints);//更新用户表的用户积分
         //生产者发送图表Id给消费者，具体的事务处理在消费者中进行
         biMessageProducer.sendMessage(String.valueOf(newChartId));
         BiResponse biResponse = new BiResponse();

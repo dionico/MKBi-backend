@@ -87,6 +87,13 @@ public interface UserService extends IService<User> {
     LoginUserVO getLoginUserVO(User user);
 
     /**
+     * 更新用户积分
+     * @param userId
+     * @param points
+     */
+    void updateUserPoints(Long userId, Integer points);
+
+    /**
      * 获取脱敏的用户信息
      *
      * @param user

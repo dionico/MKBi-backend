@@ -4,19 +4,18 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yupi.springbootinit.common.ErrorCode;
-import com.yupi.springbootinit.constant.CommonConstant;
 import com.yupi.springbootinit.constant.PointsConstant;
 import com.yupi.springbootinit.exception.BusinessException;
+import com.yupi.springbootinit.exception.ThrowUtils;
 import com.yupi.springbootinit.mapper.UserMapper;
 import com.yupi.springbootinit.model.dto.user.UserQueryRequest;
 import com.yupi.springbootinit.model.entity.User;
 import com.yupi.springbootinit.model.entity.UserPoints;
-import com.yupi.springbootinit.model.entity.UserWithPoints;
 import com.yupi.springbootinit.model.enums.UserRoleEnum;
 import com.yupi.springbootinit.model.vo.LoginUserVO;
 import com.yupi.springbootinit.model.vo.UserVO;
+import com.yupi.springbootinit.service.UserPointsService;
 import com.yupi.springbootinit.service.UserService;
-import com.yupi.springbootinit.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -27,6 +26,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +43,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     implements UserService {
 
     @Resource
-    private UserPointsServiceImpl userPointsService;
+    private UserPointsService userPointsService;
 
 
     /**
@@ -89,6 +89,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             UserPoints initialUserPoints = new UserPoints();
             initialUserPoints.setUserId(user.getId()); // user 是刚注册成功的用户对象
             initialUserPoints.setTotalPoints(PointsConstant.INITIAL_POINTS); // 初始化积分
+            user.setTotalPoints(PointsConstant.INITIAL_POINTS);
             initialUserPoints.setPointSource(PointsConstant.REGISTER);//积分来源
 //            initialUserPoints.setCurrentPoints(PointsConstant.INITIAL_POINTS); // 可以设置当前积分等于初始积分，假设首次注册全部到账
             boolean result = userPointsService.save(initialUserPoints);
@@ -123,30 +124,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             log.info("user login failed, userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         }
-
-        // 创建LoginUserVO对象并设置非敏感属性和积分信息
-//        LoginUserVO loginUserVO = new LoginUserVO();
-//        loginUserVO.setId(user.getId());
-//        loginUserVO.setUserAvatar(user.getUserAvatar());
-//        loginUserVO.setUserName(user.getUserName());
-//        loginUserVO.setUserRole(user.getUserRole());
-//        loginUserVO.setBirth(user.getBirth());
-//        loginUserVO.setGender(user.getGender());
-//        loginUserVO.setPhone(user.getPhone());
-//        loginUserVO.setCreateTime(user.getCreateTime());
-//        loginUserVO.setUpdateTime(user.getUpdateTime());
-
-//        // 查询用户的积分信息
-//        QueryWrapper<UserPoints> pointsQueryWrapper = new QueryWrapper<>();
-//        pointsQueryWrapper.eq("userId", user.getId());
-//        UserPoints userPoints = userPointsService.getOne(pointsQueryWrapper);
-//
-//        // 如果存在积分记录，将积分信息设置到用户对象中
-//        if (userPoints != null) {
-//            loginUserVO.setTotalPoints(userPoints.getTotalPoints()); // 假设totalPoints是用户的总积分
-//        } else {
-//            loginUserVO.setTotalPoints(0); // 如果没有积分记录，设置为0
-//        }
         // 3. 记录用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, user);
         return this.getLoginUserVO(user);
@@ -235,8 +212,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return null;
         }
         LoginUserVO loginUserVO = new LoginUserVO();
+        // 查询用户的积分信息
+        QueryWrapper<UserPoints> pointsQueryWrapper = new QueryWrapper<>();
+        pointsQueryWrapper.eq("userId", user.getId());
+        UserPoints userPoints = userPointsService.getOne(pointsQueryWrapper);
+
+        // 如果存在积分记录，将积分信息设置到用户对象中
+        if (userPoints != null) {
+            loginUserVO.setTotalPoints(userPoints.getTotalPoints()); // 假设totalPoints是用户的总积分
+        } else {
+            loginUserVO.setTotalPoints(0); // 如果没有积分记录，设置为0
+        }
         BeanUtils.copyProperties(user, loginUserVO);
         return loginUserVO;
+    }
+
+    /**
+     * 更新用户积分
+     * @param userId
+     * @param points
+     */
+    @Override
+    public void updateUserPoints(Long userId, Integer points) {
+        if (userId == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        User user = getById(userId);
+//        Integer userPoints = user.getTotalPoints(); //获取用户积分
+//        ThrowUtils.throwIf((userPoints + points) < 0, ErrorCode.OPERATION_ERROR, "积分不足");
+        user.setTotalPoints( points);
+        updateById(user);
     }
 
     @Override
@@ -266,15 +271,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String userName = userQueryRequest.getUserName();
         String userRole = userQueryRequest.getUserRole();
         String gender = userQueryRequest.getGender();
-        String sortField = userQueryRequest.getSortField();
-        String sortOrder = userQueryRequest.getSortOrder();
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(id != null, "id", id);
         queryWrapper.eq(StringUtils.isNotBlank(userRole), "userRole", userRole);
         queryWrapper.eq(StringUtils.isNotBlank(gender),"gender", gender);
         queryWrapper.like(StringUtils.isNotBlank(userName), "userName", userName);
-        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
-                sortField);
         return queryWrapper;
     }
 

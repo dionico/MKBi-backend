@@ -16,6 +16,7 @@ create table if not exists user
     userAvatar   varchar(1024)                          null comment '用户头像',
     gender       tinyint      default 0                 not null comment '性别：0女1男',
     phone        varchar(32)                            null comment '电话',
+    totalPoints  int          default 0                 null comment '用户积分',
     birth        datetime                               null comment '出生日期',
     userRole     varchar(256) default 'user'            not null comment '用户角色：user/admin',
     createTime   datetime     default CURRENT_TIMESTAMP not null comment '创建时间',

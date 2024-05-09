@@ -8,6 +8,7 @@ import com.yupi.springbootinit.common.DeleteRequest;
 import com.yupi.springbootinit.common.ErrorCode;
 import com.yupi.springbootinit.common.ResultUtils;
 import com.yupi.springbootinit.constant.CommonConstant;
+import com.yupi.springbootinit.constant.PointsConstant;
 import com.yupi.springbootinit.constant.UserConstant;
 import com.yupi.springbootinit.exception.BusinessException;
 import com.yupi.springbootinit.exception.ThrowUtils;
@@ -34,7 +35,6 @@ import java.util.Date;
  * 积分接口
  *
  */
-@Api(tags = {"积分管理"})
 @RestController
 @RequestMapping("/userPoints")
 @Slf4j
@@ -47,7 +47,6 @@ public class PointsController {
     @Resource
     private UserService userService;
 
-    @ApiOperation(value = "添加积分记录", tags = {"普通操作"})
     @PostMapping("/add")
     public BaseResponse<Long> addUserPoints(@RequestBody UserPointsAddRequest userPointsAddRequest, HttpServletRequest request) {
         if (userPointsAddRequest == null) {
@@ -58,9 +57,18 @@ public class PointsController {
 
         Long userId = userPointsAddRequest.getUserId();
         userPoints.setUserId(userId);
+
+        //报存积分记录到积分表
         boolean result = userPointsService.save(userPoints);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR,"更新用户积分表失败");
+        //获取新添加的积分记录id
         long newUserPointsId = userPoints.getId();
+
+        //更新用户表中的积分字段
+        User user = userService.getById(userId);//获取用户实体
+        user.setTotalPoints(userPoints.getTotalPoints());//设置新积分值
+        boolean userUpdateResult = userService.updateById(user);//更新用户表
+        ThrowUtils.throwIf(!userUpdateResult, ErrorCode.OPERATION_ERROR,"更新用户表积分失败");
         return ResultUtils.success(newUserPointsId);
     }
 
@@ -71,7 +79,6 @@ public class PointsController {
      * @param request
      * @return
      */
-    @ApiOperation(value = "删除积分记录", tags = {"管理员操作"})
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUserPoints(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
@@ -91,14 +98,12 @@ public class PointsController {
     }
 
     /**
-     * 更新（仅管理员）
+     * 更新
      *
      * @param userPointsUpdateRequest
      * @return
      */
-    @ApiOperation(value = "更新积分记录", tags = {"管理员操作"})
     @PostMapping("/update")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateUserPoints(@RequestBody UserPointsUpdateRequest userPointsUpdateRequest) {
         if (userPointsUpdateRequest == null || userPointsUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -109,6 +114,11 @@ public class PointsController {
         // 判断是否存在
         UserPoints oldUserPoints = userPointsService.getById(id);
         ThrowUtils.throwIf(oldUserPoints == null, ErrorCode.NOT_FOUND_ERROR);
+
+        Long userId = userPointsUpdateRequest.getUserId();//获取对应用户id
+        User user = userService.getById(userId);
+        user.setTotalPoints(userPoints.getTotalPoints());//更新用户表的积分
+
         boolean result = userPointsService.updateById(userPoints);
         return ResultUtils.success(result);
     }
@@ -119,7 +129,6 @@ public class PointsController {
      * @param id
      * @return
      */
-    @ApiOperation(value = "根据id获取", tags = {"普通操作"})
     @GetMapping("/get")
     public BaseResponse<UserPoints> getUserPointsById(long id, HttpServletRequest request) {
         if (id <= 0) {
@@ -139,7 +148,6 @@ public class PointsController {
      * @param request
      * @return
      */
-    @ApiOperation(value = "管理员分页获取", tags = {"管理员操作"})
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<UserPoints>> listUserPointsByPage(@RequestBody PointsQueryRequest PointsQueryRequest,
@@ -160,7 +168,6 @@ public class PointsController {
      * @param request
      * @return
      */
-    @ApiOperation(value = "分页获取", tags = {"普通操作"})
     @PostMapping("/my/list/page")
     public BaseResponse<Page<UserPoints>> listMyUserPointsByPage(@RequestBody PointsQueryRequest PointsQueryRequest,
             HttpServletRequest request) {
@@ -180,45 +187,22 @@ public class PointsController {
 
     // endregion
 
-
-    /**
-     * 编辑（用户）
-     *
-     * @param userPointsEditRequest
-     * @param request
-     * @return
-     */
-//    @PostMapping("/edit")
-//    public BaseResponse<Boolean> editUserPoints(@RequestBody UserPointsEditRequest userPointsEditRequest, HttpServletRequest request) {
-//        if (userPointsEditRequest == null || userPointsEditRequest.getId() <= 0) {
-//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-//        }
-//        UserPoints userPoints = new UserPoints();
-//        BeanUtils.copyProperties(userPointsEditRequest, userPoints);
-//        User loginUser = userService.getLoginUser(request);
-//        long id = userPointsEditRequest.getId();
-//        // 判断是否存在
-//        UserPoints oldUserPoints = userPointsService.getById(id);
-//        ThrowUtils.throwIf(oldUserPoints == null, ErrorCode.NOT_FOUND_ERROR);
-//        // 仅本人或管理员可编辑
-//        if (!oldUserPoints.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
-//            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-//        }
-//        boolean result = userPointsService.updateById(userPoints);
-//        return ResultUtils.success(result);
-//    }
-
     /**
      * 每日签到
      * @param request
      * @return
      */
-    @ApiOperation(value = "签到", tags = {"普通操作"})
     @GetMapping("/sign")
     public BaseResponse<Boolean> signUserPoints(HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         Long userId = loginUser.getId();
         Boolean result = userPointsService.signUser(userId);
+        ThrowUtils.throwIf(result, ErrorCode.OPERATION_ERROR, "签到失败");
+
+        Integer userPoints = userPointsService.getTotalPoints(userId);
+        // 通过 UserService 更新用户表中的积分
+        userService.updateUserPoints(userId, userPoints);
+
         return ResultUtils.success(result);
     }
 
